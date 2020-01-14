@@ -32,7 +32,8 @@ yellow = (255, 255, 0)
 
 win=pygame.display.set_mode((dim,dim))
 pygame.display.set_caption("Marble Game")
-font=pygame.font.SysFont("The Times New Roman",20)
+font1=pygame.font.SysFont("The Times New Roman",50)
+font2=pygame.font.SysFont("The Times New Roman",100)
 
 # Game Board
 m = 0
@@ -73,16 +74,16 @@ def user_input():
     user_j = 0
 
     for event in pygame.event.get():
-            if event.type==pygame.MOUSEBUTTONDOWN:
-                user_x, user_y = pygame.mouse.get_pos()
+        if event.type==pygame.MOUSEBUTTONDOWN:
+            user_x, user_y = pygame.mouse.get_pos()
 
-                for i in range(0,7):
-                    for j in range(0,7):
-                        marb_y = centre + (i-3) * central_distance
-                        marb_x = centre + (j-3) * central_distance
+            for i in range(0,7):
+                for j in range(0,7):
+                    marb_y = centre + (i-3) * central_distance
+                    marb_x = centre + (j-3) * central_distance
 
-                        if math.sqrt((user_x - marb_x)**2 + (user_y - marb_y)**2) <= marble_radius:
-                            (user_i,user_j) = (i,j)
+                    if math.sqrt((user_x - marb_x)**2 + (user_y - marb_y)**2) <= marble_radius:
+                        (user_i,user_j) = (i,j)
     return (user_i,user_j)
 
 def canMove(i,j):
@@ -208,9 +209,25 @@ def move(i,j):
     if len(movelst) == 1:
         (move_i,move_j) = movelst[0]
     else:
-        print(movelst)
-        moveidx=int(input('choose your move no.:-'))-1
-        (move_i,move_j)=movelst[moveidx]
+        not_moved = True
+        board()
+        pygame.display.update()
+
+        while not_moved:
+            event = pygame.event.wait()
+            if event.type == pygame.MOUSEMOTION:
+                user_x, user_y = pygame.mouse.get_pos()
+                print(user_x,user_y)
+                for mv in movelst:
+                    marb_y = centre + (mv[0]-3) * central_distance
+                    marb_x = centre + (mv[1]-3) * central_distance
+                    print(marb_x,marb_y)
+                    if (event.buttons[0] == 1) and (math.sqrt((user_x - marb_x)**2 + (user_y - marb_y)**2) <= marble_radius):
+                            (move_i,move_j) = mv
+                            print(move_i,move_j)
+                            not_moved = False
+
+
 
         for mv in movelst:
             Gbrd[mv[0]][mv[1]] = e
@@ -228,19 +245,48 @@ def move(i,j):
         else:
             Gbrd[i-1][j] = e
 
-while True:
+def count():
+    count=0
+    for row in Gbrd:
+        for place in row:
+            if place == m:
+                count+=1
+    return count
+
+def status():
+
+    stat="end"
+    for i in range(0,7):
+        for j in range(0,7):
+            if canMove(i,j):
+                stat="run"
+    if stat=="run":
+        return True
+    else:
+        return False
+
+while status():
     pygame.time.delay(100)
     movelst=[]
 
     board()
+    pygame.display.update()
     (marb_i,marb_j) = user_input()
 
     if canMove(marb_i,marb_j):
         addmoves(marb_i,marb_j)
         move(marb_i,marb_j)
 
+    event = pygame.event.wait()
+    if event.type == pygame.QUIT :
+        break
 
+text1 = font1.render("Number of marbles left:-",False,white)
+text2 = font2.render(str(count()),False,white)
+win.blit(text1,(50,100))
+win.blit(text2,(200,200))
+pygame.display.update()
 
-    pygame.display.update()
-
-pygame.quit()
+event = pygame.event.wait()
+if event.type == pygame.QUIT :
+    pygame.quit()
