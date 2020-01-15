@@ -221,10 +221,8 @@ def move(i,j):
                 for mv in movelst:
                     marb_y = centre + (mv[0]-3) * central_distance
                     marb_x = centre + (mv[1]-3) * central_distance
-                    print(marb_x,marb_y)
                     if (event.buttons[0] == 1) and (math.sqrt((user_x - marb_x)**2 + (user_y - marb_y)**2) <= marble_radius):
                             (move_i,move_j) = mv
-                            print(move_i,move_j)
                             not_moved = False
 
 
@@ -283,6 +281,7 @@ while status():
 
 text1 = font1.render("Number of marbles left:-",False,white)
 text2 = font2.render(str(count()),False,white)
+board()
 win.blit(text1,(50,100))
 win.blit(text2,(200,200))
 pygame.display.update()
