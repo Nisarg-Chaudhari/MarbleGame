@@ -261,8 +261,13 @@ while status():
     movelst=[]
 
     board()
+<<<<<<< HEAD
     marbles = font2.render(str(count()),False,white)
     win.blit(marbles,(400,10))
+=======
+    score = font2.render(str(count()),False,white)
+    win.blit(score,(400,10))
+>>>>>>> f608738daf6336f3a173a6a5027b1d907a967360
     pygame.display.update()
     (marb_i,marb_j) = user_input()
 
