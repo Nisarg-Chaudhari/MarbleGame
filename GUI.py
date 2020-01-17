@@ -48,6 +48,8 @@ def board():
     win.fill(background)
     pygame.draw.circle(win,board_colour,(centre,centre),board_radius)
     pygame.draw.circle(win,board_border,(centre,centre),board_radius,border_width)
+    score = font2.render(str(count()),False,white)
+    win.blit(score,(400,10))
 
     for i in range(0,7):
         for j in range(0,7):
@@ -210,7 +212,6 @@ def move(i,j):
             event = pygame.event.wait()
             if event.type == pygame.MOUSEMOTION:
                 user_x, user_y = pygame.mouse.get_pos()
-                print(user_x,user_y)
                 for mv in movelst:
                     marb_y = centre + (mv[0]-3) * central_distance
                     marb_x = centre + (mv[1]-3) * central_distance
@@ -261,13 +262,6 @@ while status():
     movelst=[]
 
     board()
-<<<<<<< HEAD
-    marbles = font2.render(str(count()),False,white)
-    win.blit(marbles,(400,10))
-=======
-    score = font2.render(str(count()),False,white)
-    win.blit(score,(400,10))
->>>>>>> f608738daf6336f3a173a6a5027b1d907a967360
     pygame.display.update()
     (marb_i,marb_j) = user_input()
 
