@@ -34,9 +34,9 @@ e = 1
 f = 8
 a = 5
 
-Gbrd = [[f,f,m,m,m,f,f],
+Gbrd = [[f,f,m,m,e,f,f],
         [f,f,m,m,m,f,f],
-        [m,m,m,m,m,m,m],
+        [m,m,e,m,m,m,m],
         [m,m,m,e,m,m,m],
         [m,m,m,m,m,m,m],
         [f,f,m,m,m,f,f],
@@ -199,31 +199,31 @@ def addmoves(i,j):
                 movelst.append((i,j-2))
                 Gbrd[i][j-2] = a
 
-def move(i,j):
+def move_pos(i,j):
 
     if len(movelst) == 1:
         (move_i,move_j) = movelst[0]
+        return (move_i,move_j)
     else:
         not_moved = True
         board()
         pygame.display.update()
 
         while not_moved:
-            event = pygame.event.wait()
-            if event.type == pygame.MOUSEMOTION:
-                user_x, user_y = pygame.mouse.get_pos()
-                for mv in movelst:
-                    marb_y = centre + (mv[0]-3) * central_distance
-                    marb_x = centre + (mv[1]-3) * central_distance
-                    if (event.buttons[0] == 1) and (math.sqrt((user_x - marb_x)**2 + (user_y - marb_y)**2) <= marble_radius):
-                            (move_i,move_j) = mv
-                            not_moved = False
-
-
-
+            for event in pygame.event.get():
+                if event.type==pygame.MOUSEBUTTONDOWN:
+                    user_x, user_y = pygame.mouse.get_pos()
+                    for mv in movelst:
+                        marb_y = centre + (mv[0]-3) * central_distance
+                        marb_x = centre + (mv[1]-3) * central_distance
+                        if (math.sqrt((user_x - marb_x)**2 + (user_y - marb_y)**2) <= marble_radius):
+                                (move_i,move_j) = mv
+                                not_moved = False
         for mv in movelst:
             Gbrd[mv[0]][mv[1]] = e
+        return (move_i,move_j)
 
+def move(i,j,move_i,move_j):
     Gbrd[i][j] = e
     Gbrd[move_i][move_j] = m
     if i == move_i:
@@ -267,7 +267,8 @@ while status():
 
     if canMove(marb_i,marb_j):
         addmoves(marb_i,marb_j)
-        move(marb_i,marb_j)
+        (move_i,move_j) = move_pos(marb_i,marb_j)
+        move(marb_i,marb_j,move_i,move_j)
 
     event = pygame.event.wait()
     if event.type == pygame.QUIT :
@@ -275,6 +276,7 @@ while status():
 
 text1 = font1.render("Number of marbles left:-",False,white)
 text2 = font2.render(str(count()),False,white)
+
 board()
 win.blit(text1,(50,100))
 win.blit(text2,(200,200))
