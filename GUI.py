@@ -14,6 +14,11 @@ marble_radius = 20
 padding = 15
 central_distance = 2 * marble_radius + padding
 
+undo_count = 0
+max_undo = 5
+last_mv = []
+current_move = False
+
 #Colours
 board_colour = (0, 80, 0)
 board_border = (0,75,0)
@@ -27,6 +32,7 @@ win=pygame.display.set_mode((dim,dim))
 pygame.display.set_caption("Marble Game")
 font1=pygame.font.SysFont("The Times New Roman",50)
 font2=pygame.font.SysFont("The Times New Roman",100)
+font3=pygame.font.SysFont("The Times New Roman",30)
 
 # Game Board
 m = 0
@@ -34,9 +40,9 @@ e = 1
 f = 8
 a = 5
 
-Gbrd = [[f,f,m,m,e,f,f],
+Gbrd = [[f,f,m,m,m,f,f],
         [f,f,m,m,m,f,f],
-        [m,m,e,m,m,m,m],
+        [m,m,m,m,m,m,m],
         [m,m,m,e,m,m,m],
         [m,m,m,m,m,m,m],
         [f,f,m,m,m,f,f],
@@ -44,12 +50,22 @@ Gbrd = [[f,f,m,m,e,f,f],
 movelst=[]
 
 def board():
+    global max_undo,undo_count
 
     win.fill(background)
     pygame.draw.circle(win,board_colour,(centre,centre),board_radius)
     pygame.draw.circle(win,board_border,(centre,centre),board_radius,border_width)
+    if (max_undo - undo_count) >= 0 :
+        avlb_undo = font2.render(str(max_undo - undo_count),False,white)
+    else:
+        avlb_undo = font2.render("0",False,white)
     score = font2.render(str(count()),False,white)
-    win.blit(score,(400,10))
+    text3 = font3.render("Undo:-",False,white)
+    text4 = font3.render("Marbles:-",False,white)
+    win.blit(avlb_undo,(50,30))
+    win.blit(text3,(10,10))
+    win.blit(text4,(350,10))
+    win.blit(score,(420,30))
 
     for i in range(0,7):
         for j in range(0,7):
@@ -61,6 +77,8 @@ def board():
                 pygame.draw.circle(win,empty_colour,(marb_x,marb_y),marble_radius)
             elif Gbrd[i][j] == a :
                 pygame.draw.circle(win,avlb_colour,(marb_x,marb_y),marble_radius)
+
+    pygame.display.update()
 
 def user_input():
     user_x = 0
@@ -203,12 +221,11 @@ def move_pos(i,j):
 
     if len(movelst) == 1:
         (move_i,move_j) = movelst[0]
+        last_mv.append(((i,j),(move_i,move_j)))
         return (move_i,move_j)
     else:
         not_moved = True
         board()
-        pygame.display.update()
-
         while not_moved:
             for event in pygame.event.get():
                 if event.type==pygame.MOUSEBUTTONDOWN:
@@ -218,12 +235,14 @@ def move_pos(i,j):
                         marb_x = centre + (mv[1]-3) * central_distance
                         if (math.sqrt((user_x - marb_x)**2 + (user_y - marb_y)**2) <= marble_radius):
                                 (move_i,move_j) = mv
+                                last_mv.append(((i,j),(move_i,move_j)))
                                 not_moved = False
         for mv in movelst:
             Gbrd[mv[0]][mv[1]] = e
         return (move_i,move_j)
 
 def move(i,j,move_i,move_j):
+    global current_move
     Gbrd[i][j] = e
     Gbrd[move_i][move_j] = m
     if i == move_i:
@@ -236,6 +255,28 @@ def move(i,j,move_i,move_j):
             Gbrd[i+1][j] = e
         else:
             Gbrd[i-1][j] = e
+    current_move = True
+
+def undo():
+    global undo_count,max_undo,current_move
+    if current_move:
+        if (undo_count < max_undo) and (len(last_mv) > 0) :
+            ((i,j),(move_i,move_j)) = last_mv.pop()
+            Gbrd[i][j] = m
+            Gbrd[move_i][move_j] = e
+            if i == move_i:
+                if move_j > j:
+                    Gbrd[i][j+1] = m
+                else:
+                    Gbrd[i][j-1] = m
+            elif j == move_j:
+                if move_i > i:
+                    Gbrd[i+1][j] = m
+                else:
+                    Gbrd[i-1][j] = m
+
+        current_move = False
+        undo_count += 1
 
 def count():
     count=0
@@ -257,12 +298,11 @@ def status():
     else:
         return False
 
-while status():
+while status(): #Game loop
     pygame.time.delay(100)
     movelst=[]
 
     board()
-    pygame.display.update()
     (marb_i,marb_j) = user_input()
 
     if canMove(marb_i,marb_j):
@@ -274,11 +314,15 @@ while status():
     if event.type == pygame.QUIT :
         break
 
+    keys = pygame.key.get_pressed()
+    if keys[pygame.K_u]:
+        undo()
+
 text1 = font1.render("Number of marbles left:-",False,white)
 text2 = font2.render(str(count()),False,white)
 
 board()
-win.blit(text1,(50,100))
+win.blit(text1,(50,150))
 win.blit(text2,(200,200))
 pygame.display.update()
 
